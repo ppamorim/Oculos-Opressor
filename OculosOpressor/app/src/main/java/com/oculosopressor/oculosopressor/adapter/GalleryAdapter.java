@@ -1,34 +1,28 @@
 package com.oculosopressor.oculosopressor.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.URLUtil;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.oculosopressor.oculosopressor.R;
-import com.oculosopressor.oculosopressor.model.Photo;
-import com.squareup.picasso.Picasso;
+import com.oculosopressor.oculosopressor.model.Gallery;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by pedro on 08/11/14.
- */
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
 
     private int mScreenSize;
     private Context mContext;
-    private List<Photo> mPhotoList = new ArrayList<Photo>();
+    private List<Gallery> mGalleryList = new ArrayList<Gallery>();
 
-    public GalleryAdapter(Context context, List<Photo> items, int screenSize) {
+    public GalleryAdapter(Context context, int screenSize) {
         mScreenSize = screenSize;
         mContext = context;
-        mPhotoList.addAll(items);
     }
 
     @Override
@@ -44,26 +38,25 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
         viewHolder.itemView.setLayoutParams(layoutParams);
 
-        Photo photo = mPhotoList.get(position);
+        Gallery gallery = mGalleryList.get(position);
 
-        if (photo != null) {
-
-            String image = photo.getmImage();
-
-            if(image != null && mContext != null && URLUtil.isValidUrl(image)) {
-
-                Picasso.with(mContext)
-                        .load(image)
-                        .into(viewHolder.photo);
-
-            }
-        }
+        viewHolder.photo.setImageBitmap(gallery.getBitmap());
+//        viewHolder.photo.setTag(gallery.);
 
     }
 
     @Override
     public int getItemCount() {
-        return mPhotoList.size();
+        return mGalleryList.size();
+    }
+
+    public void updateList(Gallery galleries){
+        this.mGalleryList.add(galleries);
+        this.notifyDataSetChanged();
+    }
+
+    public void updateImageList(Bitmap bitmap) {
+
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
