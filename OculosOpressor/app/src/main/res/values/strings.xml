@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">OculosOpressor</string>
+    <string name="app_name_uppercase">OCULOS OPRESSOR</string>
+    <string name="action_settings">Settings</string>
+    <string name="shit_happens">Alguma merda aconteceu!</string>
+    <string name="add_photo">Adiconar Foto</string>
+    <string name="add_instrumento">Instrumento Opressor!</string>
+    <string name="save_opression">Salvar Opressão!</string>
+    <string name="welcome">Seja bem vindo!\n Fique tranquilo, isso aparece apenas uma vez…</string>
+    <string name="click_here">Clique na coxinha marota para continuar :)</string>
+    <string name="camera_uppercase">CAMERA</string>
+    <string name="gallery_uppercase">GALERIA</string>
+    <string name="contact">Contato</string>
+
+</resources>

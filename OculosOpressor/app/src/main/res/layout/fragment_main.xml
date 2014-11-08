@@ -1,0 +1,116 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        xmlns:sothree="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/sliding_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        sothree:panelHeight="70dp"
+        sothree:shadowHeight="4dp">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_list"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black"
+            android:orientation="vertical">
+
+                <com.oculosopressor.oculosopressor.core.view.SlidingTabLayout
+                    android:id="@+id/sliding_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/viewpager"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+        
+    <!--<LinearLayout-->
+        <!--android:id="@+id/topopressor"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="50dp"-->
+        <!--android:orientation="horizontal" -->
+        <!--android:weightSum="2"-->
+        <!--android:layout_alignParentTop="true" >-->
+
+		    <!--<LinearLayout-->
+		        <!--android:id="@+id/seekBar_containerTamanho"-->
+		        <!--android:layout_width="match_parent"-->
+		        <!--android:layout_height="50dp"-->
+		        <!--android:orientation="vertical" -->
+		        <!--android:layout_weight="1"  >-->
+
+		        <!--<TextView-->
+		            <!--android:layout_width="fill_parent"-->
+		            <!--android:layout_height="20dp"-->
+		            <!--android:text="Tamanho"-->
+		            <!--android:textAppearance="?android:attr/textAppearanceMedium" />		        		        -->
+		        <!---->
+		        <!--<SeekBar-->
+		            <!--android:id="@+id/seekBarTamanho"-->
+		            <!--android:layout_width="match_parent"-->
+		            <!--android:layout_height="30dp"/>-->
+
+
+
+			<!--</LinearLayout>-->
+			<!---->
+		    <!--<LinearLayout-->
+		        <!--android:id="@+id/seekBar_containerGirar"-->
+		        <!--android:layout_width="match_parent"-->
+		        <!--android:layout_height="50dp"-->
+		        <!--android:orientation="vertical" -->
+		         <!--android:layout_weight="1"    >-->
+		    		    <!---->
+		        <!--<TextView-->
+ <!---->
+		            <!--android:layout_width="fill_parent"-->
+		            <!--android:layout_height="20dp"-->
+		            <!--android:text="Girar"-->
+		            <!--android:textAppearance="?android:attr/textAppearanceMedium" />		-->
+		        	    <!---->
+			        <!--<SeekBar-->
+			            <!--android:id="@+id/seekBarGirar"-->
+			            <!--android:layout_width="match_parent"-->
+			            <!--android:layout_height="30dp" />-->
+			        <!---->
+			<!--</LinearLayout>-->
+    <!--</LinearLayout>-->
+    <!---->
+    <!--<com.oculosopressor.oculosopressor.Controller.DragLayer-->
+        <!--android:id="@+id/drag_layer"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_below="@+id/topopressor">-->
+
+        <!--<ImageView-->
+            <!--android:id="@+id/esquerdaCaviar"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="fill_parent"-->
+            <!--android:adjustViewBounds="true"-->
+            <!---->
+            <!--android:scaleType="fitXY" />-->
+
+        <!--<ImageView-->
+            <!--android:id="@+id/instrumentopressor"-->
+            <!--android:layout_width="400dp"-->
+            <!--android:layout_height="80dp"-->
+            <!--android:src="@drawable/deal" />-->
+
+    <!--</com.oculosopressor.oculosopressor.Controller.DragLayer>-->
+    
+ 
+    
+ </FrameLayout>
