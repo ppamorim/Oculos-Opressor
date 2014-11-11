@@ -7,8 +7,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 //import com.oculosopressor.oculosopressor.Activity.BaseActivity;
 //import com.oculosopressor.oculosopressor.Controller.DragController;
@@ -18,6 +20,7 @@ import com.oculosopressor.oculosopressor.adapter.PhotoAdapter;
 import com.oculosopressor.oculosopressor.adapter.View.TabsPagerAdapter;
 import com.oculosopressor.oculosopressor.core.view.SlidingTabLayout;
 import com.oculosopressor.oculosopressor.model.Photo;
+import com.oculosopressor.oculosopressor.utils.DebugUtil;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView.LayoutManager mLayoutManager;
 
     private SlidingUpPanelLayout mSlidingPanel;
+    private CameraFragment mCameraFragment;
 
 //	private DragController mDragController;
 // 	private DragLayer mDragLayer;
@@ -94,7 +98,8 @@ public class HomeFragment extends Fragment {
         mPhotoAdapter = new PhotoAdapter(getActivity(), photos);
         mRecyclerView.setAdapter(mPhotoAdapter);
 
-        arrayFragments.add(CameraFragment.newInstance());
+        mCameraFragment = CameraFragment.newInstance();
+        arrayFragments.add(mCameraFragment);
         arrayFragments.add(GridPhotosFragment.newInstance());
 
         arrayTagFragment.add(getString(R.string.camera_uppercase));
@@ -118,6 +123,16 @@ public class HomeFragment extends Fragment {
         mSlidingTabLayout.setCustomTextColor(getResources().getColor(R.color.yellow));
         mSlidingTabLayout.setOnPageChangeListener(onPageChangeListener);
         mSlidingTabLayout.setCustomTabColorizer(setCustomTabColor);
+        mSlidingTabLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (mSlidingPanel != null && !mSlidingPanel.isPanelExpanded()) {
+                    mSlidingPanel.expandPanel();
+                }
+                return false;
+            }
+        });
+        mSlidingPanel.setPanelSlideListener(onSlideListener);
 
     }
 
@@ -168,6 +183,47 @@ public class HomeFragment extends Fragment {
 //	    return true;
 //	}
 
+    private SlidingUpPanelLayout.PanelSlideListener onSlideListener = new SlidingUpPanelLayout.PanelSlideListener() {
+        @Override
+        public void onPanelSlide(View view, float position) {
+            if(mCameraFragment != null) {
+
+                /*
+                * alpha method here
+                *
+                 */
+
+                if (position < 0.1) {
+                    mCameraFragment.resetView();
+                    mCameraFragment.disableCamera();
+                }
+
+            }
+        }
+
+        @Override
+        public void onPanelCollapsed(View view) {
+
+        }
+
+        @Override
+        public void onPanelExpanded(View view) {
+            if(mCameraFragment != null) {
+                mCameraFragment.enableCamera();
+            }
+        }
+
+        @Override
+        public void onPanelAnchored(View view) {
+
+        }
+
+        @Override
+        public void onPanelHidden(View view) {
+
+        }
+    };
+
     private ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -206,6 +262,12 @@ public class HomeFragment extends Fragment {
             return Color.parseColor(getResources().getString(R.color.black));
         }
     };
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mCameraFragment = null;
+    }
 
     public static HomeFragment newInstance() {
         return new HomeFragment();

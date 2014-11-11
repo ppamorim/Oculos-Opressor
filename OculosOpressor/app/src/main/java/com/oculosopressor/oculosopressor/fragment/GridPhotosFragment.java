@@ -144,7 +144,10 @@ public class GridPhotosFragment extends Fragment {
                         }
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
                     //Error fetching image, try to recover
+                } catch (OutOfMemoryError eo) {
+                    eo.printStackTrace();
                 }
             }
             cursor.close();

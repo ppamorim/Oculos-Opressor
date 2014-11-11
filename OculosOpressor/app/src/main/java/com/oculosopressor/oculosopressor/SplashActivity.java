@@ -82,7 +82,7 @@ public class SplashActivity extends ActionBarActivity {
         if(canStart) {
 
             if(useAnimation) {
-                overridePendingTransition(R.anim.slide_in, R.anim.slide_out);
+                overridePendingTransition(R.anim.slide_out, R.anim.slide_out);
             }
             startActivity(new Intent(this, BaseActivity.class));
         }

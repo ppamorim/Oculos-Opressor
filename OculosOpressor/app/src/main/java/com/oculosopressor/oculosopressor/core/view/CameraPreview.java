@@ -6,15 +6,22 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Build;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -42,7 +49,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int mCenterPosX = -1;
     private int mCenterPosY;
     private Camera.Parameters params;
-    
+
+    private int mWidth;
+    private int mheight;
+
+    private View mView;
+
+    private boolean isToReset;
+
     PreviewReadyCallback mPreviewReadyCallback = null;
     
     public static enum LayoutMode {
@@ -75,25 +89,32 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         configCamera(context);
     }
 
-    public CameraPreview(Context context, int cameraId, LayoutMode mode) {
+    public CameraPreview(Context context, int cameraId, LayoutMode mode, View view) {
         super(context); // Always necessary
-        configCamera(context);
+        mView = view;
+        configCamera(context, cameraId, mode);
+
     }
 
     private void configCamera(Context context) {
-        mLayoutMode = LayoutMode.FitToParent;
+        configCamera(context, 0, CameraPreview.LayoutMode.NoBlank);
+    }
+
+    private void configCamera(Context context, int cameraId, LayoutMode mode) {
+        mLayoutMode = mode;
         mContext = context;
         mHolder = getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        mCameraId = 0;
+        mCameraId = cameraId;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
             mCamera = Camera.open(mCameraId);
         } else {
             mCamera = Camera.open();
         }
+
         Camera.Parameters cameraParams = mCamera.getParameters();
         mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
         mPictureSizeList = cameraParams.getSupportedPictureSizes();
@@ -105,7 +126,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            mCamera.setPreviewDisplay(mHolder);
+            if(mCamera != null) {
+                mCamera.setPreviewDisplay(mHolder);
+            }
         } catch (IOException e) {
             mCamera.release();
             mCamera = null;
@@ -115,59 +138,50 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         mSurfaceChangedCallDepth++;
-        doSurfaceChanged(width, height);
+        doSurfaceChanged(mView.getWidth(), mView.getHeight());
         mSurfaceChangedCallDepth--;
     }
 
     private void doSurfaceChanged(int width, int height) {
-        mCamera.stopPreview();
-        
-        Camera.Parameters cameraParams = mCamera.getParameters();
-        boolean portrait = isPortrait();
 
-        // The code in this if-statement is prevented from executed again when surfaceChanged is
-        // called again due to the change of the layout size in this if-statement.
-        if (!mSurfaceConfiguring) {
-            Camera.Size previewSize = determinePreviewSize(portrait, width, height);
-            Camera.Size pictureSize = determinePictureSize(previewSize);
-            if (DEBUGGING) { Log.v(LOG_TAG, "Desired Preview Size - w: " + width + ", h: " + height); }
-            mPreviewSize = previewSize;
-            mPictureSize = pictureSize;
-            mSurfaceConfiguring = adjustSurfaceLayoutSize(previewSize, portrait, width, height);
-            // Continue executing this method if this method is called recursively.
-            // Recursive call of surfaceChanged is very special case, which is a path from
-            // the catch clause at the end of this method.
-            // The later part of this method should be executed as well in the recursive
-            // invocation of this method, because the layout change made in this recursive
-            // call will not trigger another invocation of this method.
-            if (mSurfaceConfiguring && (mSurfaceChangedCallDepth <= 1)) {
-                return;
+        if(mCamera != null) {
+
+            mCamera.stopPreview();
+
+            Camera.Parameters cameraParams = mCamera.getParameters();
+            boolean portrait = isPortrait();
+
+            // The code in this if-statement is prevented from executed again when surfaceChanged is
+            // called again due to the change of the layout size in this if-statement.
+            if (!mSurfaceConfiguring) {
+                Camera.Size previewSize = determinePreviewSize(portrait, width, height);
+                Camera.Size pictureSize = determinePictureSize(previewSize);
+                if (DEBUGGING) {
+                    Log.v(LOG_TAG, "Desired Preview Size - w: " + width + ", h: " + height);
+                }
+                mPreviewSize = previewSize;
+                mPictureSize = pictureSize;
+                mSurfaceConfiguring = adjustSurfaceLayoutSize(previewSize, portrait, width, height);
+                // Continue executing this method if this method is called recursively.
+                // Recursive call of surfaceChanged is very special case, which is a path from
+                // the catch clause at the end of this method.
+                // The later part of this method should be executed as well in the recursive
+                // invocation of this method, because the layout change made in this recursive
+                // call will not trigger another invocation of this method.
+                if (mSurfaceConfiguring && (mSurfaceChangedCallDepth <= 1)) {
+                    return;
+                }
             }
-        }
 
-        configureCameraParameters(cameraParams, portrait);
-        mSurfaceConfiguring = false;
+            configureCameraParameters(cameraParams, portrait);
+            mSurfaceConfiguring = false;
 
-        try {
-            mCamera.startPreview();
-        } catch (Exception e) {
-            Log.w(LOG_TAG, "Failed to start preview: " + e.getMessage());
+            mWidth = width;
+            mheight = height;
 
-            // Remove failed size
-            mPreviewSizeList.remove(mPreviewSize);
-            mPreviewSize = null;
-
-            // Reconfigure
-            if (mPreviewSizeList.size() > 0) { // prevent infinite loop
-                surfaceChanged(null, 0, width, height);
-            } else {
-                Toast.makeText(mContext.getApplicationContext(), "Can't start preview", Toast.LENGTH_LONG).show();
-                Log.w(LOG_TAG, "Gave up starting preview");
+            if (null != mPreviewReadyCallback) {
+                mPreviewReadyCallback.onPreviewReady();
             }
-        }
-        
-        if (null != mPreviewReadyCallback) {
-            mPreviewReadyCallback.onPreviewReady();
         }
     }
     
@@ -268,9 +282,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         } else {
             if (factH < factW) {
-                fact = factW;
-            } else {
                 fact = factH;
+            } else {
+                fact = factW;
             }
         }
 
@@ -352,16 +366,63 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        stop();
+        disable(true, false);
     }
-    
-    public void stop() {
-        if (null == mCamera) {
-            return;
+
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+        if (isToReset){
+            canvas.drawColor(Color.BLACK);
         }
-        mCamera.stopPreview();
-        mCamera.release();
-        mCamera = null;
+    }
+
+    public void enable(boolean isSetNull) {
+
+        try {
+            mCamera.startPreview();
+        } catch (Exception e) {
+            Log.w(LOG_TAG, "Failed to start preview: " + e.getMessage());
+
+            // Remove failed size
+            mPreviewSizeList.remove(mPreviewSize);
+            mPreviewSize = null;
+
+            // Reconfigure
+            if (mPreviewSizeList.size() > 0) { // prevent infinite loop
+                surfaceChanged(null, 0, mWidth, mheight);
+            } else {
+                Toast.makeText(mContext.getApplicationContext(), "Can't start preview", Toast.LENGTH_LONG).show();
+                Log.w(LOG_TAG, "Gave up starting preview");
+            }
+        }
+
+    }
+
+    public void disable(boolean isSetNull, boolean stop) {
+
+        try {
+
+            if (null == mCamera) {
+                return;
+            }
+
+            isToReset = true;
+            invalidate();
+            isToReset = false;
+
+            mCamera.stopPreview();
+
+            if(stop) {
+                mCamera.release();
+            }
+
+            if (isSetNull) {
+                mCamera = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean isPortrait() {
